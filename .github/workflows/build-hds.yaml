@@ -1,0 +1,188 @@
+name: Make release
+
+on:
+  workflow_dispatch:
+    inputs:
+      holo-nixpkgs-tag:
+        description: 'The holo-nixpkgs tag to build from'
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+    outputs:
+      nixpkgs-revision: ${{ steps.nixpkgs-revision.outputs.nixpkgs-revision }}
+      build-deps: ${{ steps.build-deps.outputs.build-deps }}
+    strategy:
+      matrix:
+        system:
+          - x86_64-linux
+          - aarch64-linux
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: "hds-releases"
+
+      - name: "install nix"
+        uses: "cachix/install-nix-action@v22"
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.holo.host-1:lNXIXtJgS9Iuw4Cu6X0HINLu9sTfcjEntnrgwMQIMcE= cache.holo.host-2:ZJCkX3AUYZ8soxTLfTb60g+F3MkWD7hkH9y8CgqwhDQ=
+            substituters = https://cache.holo.host https://cache.nixos.org/
+
+      - name: "download holo-nixpkgs tag"
+        run: |
+          curl -v -L \
+               -H "Authorization: Bearer ${{ secrets.HDS_ACCESS_KEY }}" \
+               https://api.github.com/repos/holo-host/holo-nixpkgs/tarball/${{ inputs.holo-nixpkgs-tag }} | \
+            tar -xz --strip-components=1 --
+
+      - name: "build holo-dev-server"
+        run: |
+          nix build -L \
+            --max-jobs 0 \
+            --out-link holo-dev-server \
+            '.#legacyPackages.${{ matrix.system }}.holo-dev-server-bin'
+
+      - name: get nixpkgs revision
+        id: nixpkgs-revision
+        run: |
+          echo "nixpkgs-revision=$(nix eval --raw '.#legacyPackages.${{ matrix.system }}.holo-dev-server-bin.nixpkgs-revision')" >> ${GITHUB_OUTPUT}
+
+      - name: get build deps
+        id: build-deps
+        run: |
+          echo "build-deps=$(nix eval --raw '.#legacyPackages.${{ matrix.system }}.holo-dev-server-bin.propagatedBuildInputs')" >> ${GITHUB_OUTPUT}
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: holo-dev-server-${{ inputs.holo-nixpkgs-tag }}-${{ matrix.system }}
+          path: |
+            holo-dev-server
+          if-no-files-found: error
+
+  upload-binary:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs: build
+    outputs:
+      release_name: ${{ steps.date.outputs.date }}
+    steps:
+      - name: download x86_64-linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: holo-dev-server-${{ inputs.holo-nixpkgs-tag }}-x86_64-linux
+          path: holo-dev-server
+
+      - name: "Create the x86_64-linux tarball"
+        run: |
+          chmod +x holo-dev-server/bin/holo-dev-server
+          tar -czf holo-dev-server-x86_64-linux.tar.gz holo-dev-server
+          rm -rf holo-dev-server
+
+      - name: download aarch64-linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: holo-dev-server-${{ inputs.holo-nixpkgs-tag }}-aarch64-linux
+          path: holo-dev-server
+
+      - name: "Create the aarch64-linux tarball"
+        run: |
+          chmod +x holo-dev-server/bin/holo-dev-server
+          tar -czf holo-dev-server-aarch64-linux.tar.gz holo-dev-server
+          rm -rf holo-dev-server
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d-%H%M%S')" >> ${GITHUB_OUTPUT}
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          gh release create ${{ steps.date.outputs.date }}
+          --repo ${{ github.repository }}
+          --title "Version ${{ steps.date.outputs.date }}"
+          "holo-dev-server-x86_64-linux.tar.gz"
+          "holo-dev-server-aarch64-linux.tar.gz"
+
+  update-sources:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs:
+      - build
+      - upload-binary
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "install nix"
+        uses: "cachix/install-nix-action@v22"
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.holo.host-1:lNXIXtJgS9Iuw4Cu6X0HINLu9sTfcjEntnrgwMQIMcE= cache.holo.host-2:ZJCkX3AUYZ8soxTLfTb60g+F3MkWD7hkH9y8CgqwhDQ=
+            substituters = https://cache.holo.host https://cache.nixos.org/
+
+      - name: prefetch nixpkgs
+        id: prefetch-nixpkgs
+        run: |
+          tar -xzf <(curl --location https://github.com/nixos/nixpkgs/archive/${{ needs.build.outputs.nixpkgs-revision }}.tar.gz)
+          echo "hash=$(nix hash path --base32 nixpkgs-${{ needs.build.outputs.nixpkgs-revision }}/)" >> ${GITHUB_OUTPUT}
+
+      - name: prefetch x86_64-linux binary
+        id: prefetch-x86_64-linux
+        run: |
+          tar -xzf <(curl --location https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-x86_64-linux.tar.gz)
+          echo "hash=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
+
+      - name: prefetch aarch64-linux binary
+        id: prefetch-aarch64-linux
+        run: |
+          tar -xzf <(curl --location https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-aarch64-linux.tar.gz)
+          echo "hash=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
+
+      - name: overwrite sources.nix
+        run: |
+          cat > sources.nix << EOF
+          # this file is autogenerated by .github/workflows/build-hds.yml
+          {
+            nixpkgs = builtins.fetchTarball {
+              url = "https://github.com/nixos/nixpkgs/archive/${{ needs.build.outputs.nixpkgs-revision }}.tar.gz";
+              sha256 = "${{ steps.prefetch-nixpkgs.outputs.hash }}";
+            };
+            x86_64-linux.holo-dev-server-bin = builtins.fetchTarball {
+              url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-x86_64-linux.tar.gz";
+              sha256 = "${{ steps.prefetch-x86_64-linux.outputs.hash }}";
+            };
+            aarch64-linux.holo-dev-server-bin = builtins.fetchTarball {
+              url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-aarch64-linux.tar.gz";
+              sha256 = "${{ steps.prefetch-aarch64-linux.outputs.hash }}";
+            };
+          }
+          EOF
+
+      - name: overwrite holo-dev-server.deps.json
+        run: |
+          cat > holo-dev-server.deps.json << EOF
+            ${{ needs.build.outputs.build-deps }}
+          EOF
+
+      - name: test if flake works
+        run: |
+          nix flake show --all-systems
+          nix flake check -L
+
+      - name: commit and push sources.nix
+        run: |
+          if [[ "$(git status --porcelain)" != "" ]]; then
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add sources.nix holo-dev-server.deps.json
+            git commit -m "update to release ${{ needs.upload-binary.outputs.release_name }}"
+            git push origin HEAD:refs/heads/main
+          fi
