@@ -38,7 +38,7 @@ jobs:
 
           curl -v -L \
                --fail-with-body \
-               -H "Authorization: Bearer ${{ secrets.HDS_ACCESS_KEY }}" \
+               -H "Authorization: Bearer ${{ secrets.HOLO_NIXPKGS_READ_KEY }}" \
                https://api.github.com/repos/holo-host/holo-nixpkgs/tarball/${{ inputs.holo-nixpkgs-tag }} | \
             tar -xz --strip-components=1 --
 
