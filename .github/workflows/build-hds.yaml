@@ -35,6 +35,7 @@ jobs:
       - name: "download holo-nixpkgs tag"
         run: |
           curl -v -L \
+               --fail-with-body \
                -H "Authorization: Bearer ${{ secrets.HDS_ACCESS_KEY }}" \
                https://api.github.com/repos/holo-host/holo-nixpkgs/tarball/${{ inputs.holo-nixpkgs-tag }} | \
             tar -xz --strip-components=1 --
