@@ -34,6 +34,8 @@ jobs:
 
       - name: "download holo-nixpkgs tag"
         run: |
+          set -eou pipefail
+
           curl -v -L \
                --fail-with-body \
                -H "Authorization: Bearer ${{ secrets.HDS_ACCESS_KEY }}" \
