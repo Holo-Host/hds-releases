@@ -5,11 +5,11 @@
     sha256 = "0imgfxzq7d7l6fcgnzzjvv6ch560svcm8s8bx8vqyvf60w24ma1d";
   };
   x86_64-linux.holo-dev-server-bin = builtins.fetchTarball {
-    url = "https://github.com/Holo-Host/hds-releases/releases/download/2024-03-19-221120/holo-dev-server-x86_64-linux.tar.gz";
+    url = "https://github.com/Holo-Host/hds-releases/releases/download/2024-03-19-221348/holo-dev-server-x86_64-linux.tar.gz";
     sha256 = "0igw676g14cacg6gawvpqxcx90q7vnfjr38iimsbyqvasmavg5r5";
   };
   aarch64-linux.holo-dev-server-bin = builtins.fetchTarball {
-    url = "https://github.com/Holo-Host/hds-releases/releases/download/2024-03-19-221120/holo-dev-server-aarch64-linux.tar.gz";
+    url = "https://github.com/Holo-Host/hds-releases/releases/download/2024-03-19-221348/holo-dev-server-aarch64-linux.tar.gz";
     sha256 = "0v4gw7pgqqi8qcdd0246aqddnsvw1f2hrdygwhpnqdlq7y18w55g";
   };
 }
