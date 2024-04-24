@@ -19,6 +19,7 @@ jobs:
         system:
           - x86_64-linux
           - aarch64-linux
+          - aarch64-darwin
     steps:
       - uses: actions/checkout@v4
         with:
@@ -99,6 +100,18 @@ jobs:
           tar -czf holo-dev-server-aarch64-linux.tar.gz holo-dev-server
           rm -rf holo-dev-server
 
+      - name: download aarch64-darwin artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: holo-dev-server-${{ inputs.holo-nixpkgs-tag }}-aarch64-darwin
+          path: holo-dev-server
+
+      - name: "Create the aarch64-darwin tarball"
+        run: |
+          chmod +x holo-dev-server/bin/holo-dev-server
+          tar -czf holo-dev-server-aarch64-darwin.tar.gz holo-dev-server
+          rm -rf holo-dev-server
+
       - name: Get current date
         id: date
         run: echo "date=$(date +'%Y-%m-%d-%H%M%S')" >> ${GITHUB_OUTPUT}
@@ -112,6 +125,7 @@ jobs:
           --title "Version ${{ steps.date.outputs.date }}"
           "holo-dev-server-x86_64-linux.tar.gz"
           "holo-dev-server-aarch64-linux.tar.gz"
+          "holo-dev-server-aarch64-darwin.tar.gz"
 
   update-sources:
     runs-on: ubuntu-latest
@@ -149,6 +163,12 @@ jobs:
           tar -xzf <(curl --location https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-aarch64-linux.tar.gz)
           echo "hash=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
 
+      - name: prefetch aarch64-darwin binary
+        id: prefetch-aarch64-darwin
+        run: |
+          tar -xzf <(curl --location https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-aarch64-darwin.tar.gz)
+          echo "hash=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
+
       - name: overwrite sources.nix
         run: |
           cat > sources.nix << EOF
@@ -165,6 +185,10 @@ jobs:
             aarch64-linux.holo-dev-server-bin = builtins.fetchTarball {
               url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-aarch64-linux.tar.gz";
               sha256 = "${{ steps.prefetch-aarch64-linux.outputs.hash }}";
+            };
+            aarch64-darwin.holo-dev-server-bin = builtins.fetchTarball {
+              url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-aarch64-darwin.tar.gz";
+              sha256 = "${{ steps.prefetch-aarch64-darwin.outputs.hash }}";
             };
           }
           EOF
