@@ -11,6 +11,7 @@
       forEachSystem = genAttrs [
         "aarch64-linux"
         "x86_64-linux"
+        "aarch64-darwin"
       ];
 
       # We only run tests for x86_64-linux in CI
