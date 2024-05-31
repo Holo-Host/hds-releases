@@ -17,9 +17,9 @@ jobs:
     strategy:
       matrix:
         build-config:
-          - { system: x86_64-linux, runner: "ubuntu-latest" }
-          - { system: aarch64-linux, runner: "ubuntu-latest" }
-          - { system: aarch64-darwin, runner: "macos-latest" }
+          - { system: x86_64-linux, runner: "ubuntu-latest", native: true }
+          - { system: aarch64-linux, runner: "ubuntu-latest", native: false }
+          - { system: aarch64-darwin, runner: "macos-latest", native: true }
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,8 +44,20 @@ jobs:
             tar -xz --strip-components=1 --
 
       - name: "build holo-dev-server"
+        if: ${{ matrix.build-config.native }}
         run: |
           nix build -vL \
+            --out-link holo-dev-server \
+            '.#legacyPackages.${{ matrix.build-config.system }}.holo-dev-server-bin'
+
+      - name: "build holo-dev-server"
+        if: ${{ ! matrix.build-config.native }}
+        run: |
+          sudo apt install binfmt-support qemu-user-static
+
+          nix build -vL \
+            --option extra-platforms aarch64-linux \
+            --option extra-sandbox-paths "/usr/libexec/qemu-binfmt /usr/bin/qemu-aarch64-static /usr/bin/qemu-aarch64-static /usr/bin/qemu-arm-static" \
             --out-link holo-dev-server \
             '.#legacyPackages.${{ matrix.build-config.system }}.holo-dev-server-bin'
 
