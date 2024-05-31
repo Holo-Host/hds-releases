@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       holo-nixpkgs-tag:
-        description: 'The holo-nixpkgs tag to build from'
+        description: "The holo-nixpkgs tag to build from"
         required: true
         type: string
 
 jobs:
   build:
-    runs-on: 'ubuntu-latest'
+    runs-on: "ubuntu-latest"
     outputs:
       nixpkgs-revision: ${{ steps.nixpkgs-revision.outputs.nixpkgs-revision }}
       build-deps: ${{ steps.build-deps.outputs.build-deps }}
@@ -45,8 +45,8 @@ jobs:
 
       - name: "build holo-dev-server"
         run: |
-          nix build -L \
-            --max-jobs 0 \
+          nix build -vL \
+            --max-jobs 1 \
             --out-link holo-dev-server \
             '.#legacyPackages.${{ matrix.system }}.holo-dev-server-bin'
 
@@ -120,12 +120,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >-
-          gh release create ${{ steps.date.outputs.date }}
-          --repo ${{ github.repository }}
-          --title "Version ${{ steps.date.outputs.date }}"
-          "holo-dev-server-x86_64-linux.tar.gz"
-          "holo-dev-server-aarch64-linux.tar.gz"
-          "holo-dev-server-aarch64-darwin.tar.gz"
+          gh release create ${{ steps.date.outputs.date }} --repo ${{ github.repository }} --title
+          "Version ${{ steps.date.outputs.date }}" "holo-dev-server-x86_64-linux.tar.gz"
+          "holo-dev-server-aarch64-linux.tar.gz" "holo-dev-server-aarch64-darwin.tar.gz"
 
   update-sources:
     runs-on: ubuntu-latest
