@@ -10,16 +10,16 @@ on:
 
 jobs:
   build:
-    runs-on: "ubuntu-latest"
+    runs-on: ${{ matrix.build-config.runner }}
     outputs:
       nixpkgs-revision: ${{ steps.nixpkgs-revision.outputs.nixpkgs-revision }}
       build-deps: ${{ steps.build-deps.outputs.build-deps }}
     strategy:
       matrix:
-        system:
-          - x86_64-linux
-          - aarch64-linux
-          - aarch64-darwin
+        build-config:
+          - { system: x86_64-linux, runner: "ubuntu-latest" }
+          - { system: aarch64-linux, runner: "ubuntu-latest" }
+          - { system: aarch64-darwin, runner: "macos-latest" }
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,24 +46,23 @@ jobs:
       - name: "build holo-dev-server"
         run: |
           nix build -vL \
-            --max-jobs 1 \
             --out-link holo-dev-server \
-            '.#legacyPackages.${{ matrix.system }}.holo-dev-server-bin'
+            '.#legacyPackages.${{ matrix.build-config.system }}.holo-dev-server-bin'
 
       - name: get nixpkgs revision
         id: nixpkgs-revision
         run: |
-          echo "nixpkgs-revision=$(nix eval --raw '.#legacyPackages.${{ matrix.system }}.holo-dev-server-bin.nixpkgs-revision')" >> ${GITHUB_OUTPUT}
+          echo "nixpkgs-revision=$(nix eval --raw '.#legacyPackages.${{ matrix.build-config.system }}.holo-dev-server-bin.nixpkgs-revision')" >> ${GITHUB_OUTPUT}
 
       - name: get build deps
         id: build-deps
         run: |
-          echo "build-deps=$(nix eval --raw '.#legacyPackages.${{ matrix.system }}.holo-dev-server-bin.propagatedBuildInputs')" >> ${GITHUB_OUTPUT}
+          echo "build-deps=$(nix eval --raw '.#legacyPackages.${{ matrix.build-config.system }}.holo-dev-server-bin.propagatedBuildInputs')" >> ${GITHUB_OUTPUT}
 
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: holo-dev-server-${{ inputs.holo-nixpkgs-tag }}-${{ matrix.system }}
+          name: holo-dev-server-${{ inputs.holo-nixpkgs-tag }}-${{ matrix.build-config.system }}
           path: |
             holo-dev-server
           if-no-files-found: error
