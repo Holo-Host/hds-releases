@@ -53,7 +53,8 @@ jobs:
       - name: "build holo-dev-server"
         if: ${{ ! matrix.build-config.native }}
         run: |
-          sudo apt install binfmt-support qemu-user-static
+          sudo apt-get update
+          sudo apt-get install binfmt-support qemu-user-static
 
           nix build -vL \
             --option extra-platforms aarch64-linux \
