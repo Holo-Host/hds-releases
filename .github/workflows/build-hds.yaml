@@ -13,6 +13,8 @@ jobs:
     runs-on: ${{ matrix.build-config.runner }}
     outputs:
       nixpkgs-revision: ${{ steps.nixpkgs-revision.outputs.nixpkgs-revision }}
+      rust-overlay-revision: ${{ steps.rust-overlay-revision.outputs.rust-overlay-revision }}
+      rust-version: ${{ steps.rust-version.outputs.rust-version }}
       build-deps: ${{ steps.build-deps.outputs.build-deps }}
     strategy:
       matrix:
@@ -66,6 +68,16 @@ jobs:
         id: nixpkgs-revision
         run: |
           echo "nixpkgs-revision=$(nix eval --raw '.#legacyPackages.${{ matrix.build-config.system }}.holo-dev-server-bin.nixpkgs-revision')" >> ${GITHUB_OUTPUT}
+
+      - name: get rust-overlay revision
+        id: rust-overlay-revision
+        run: |
+          echo "rust-overlay-revision=$(nix eval --raw '.#legacyPackages.${{ matrix.build-config.system }}.holo-dev-server-bin.rust-overlay-revision')" >> ${GITHUB_OUTPUT}
+
+      - name: get rust version
+        id: rust-version
+        run: |
+          echo "rust-version=$(nix eval --raw '.#legacyPackages.${{ matrix.build-config.system }}.holo-dev-server-bin.rust-version')" >> ${GITHUB_OUTPUT}
 
       - name: get build deps
         id: build-deps
@@ -160,6 +172,12 @@ jobs:
           tar -xzf <(curl --location https://github.com/nixos/nixpkgs/archive/${{ needs.build.outputs.nixpkgs-revision }}.tar.gz)
           echo "hash=$(nix hash path --base32 nixpkgs-${{ needs.build.outputs.nixpkgs-revision }}/)" >> ${GITHUB_OUTPUT}
 
+      - name: prefetch rust-overlay
+        id: prefetch-rust-overlay
+        run: |
+          tar -xzf <(curl --location https://github.com/oxalica/rust-overlay/archive/${{ needs.build.outputs.rust-overlay-revision }}.tar.gz)
+          echo "hash=$(nix hash path --base32 rust-overlay-${{ needs.build.outputs.rust-overlay-revision }}/)" >> ${GITHUB_OUTPUT}
+
       - name: prefetch x86_64-linux binary
         id: prefetch-x86_64-linux
         run: |
@@ -187,6 +205,13 @@ jobs:
               url = "https://github.com/nixos/nixpkgs/archive/${{ needs.build.outputs.nixpkgs-revision }}.tar.gz";
               sha256 = "${{ steps.prefetch-nixpkgs.outputs.hash }}";
             };
+
+            rust-overlay = builtins.fetchTarball {
+              url = "https://github.com/oxalica/rust-overlay/archive/${{ needs.build.outputs.rust-overlay-revision }}.tar.gz";
+              sha256 = "${{ steps.prefetch-rust-overlay.outputs.hash }}";
+            };
+            rust-version = "${{ needs.build.outputs.rust-version }}";
+
             x86_64-linux.holo-dev-server-bin = builtins.fetchTarball {
               url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-x86_64-linux.tar.gz";
               sha256 = "${{ steps.prefetch-x86_64-linux.outputs.hash }}";
