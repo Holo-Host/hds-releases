@@ -22,7 +22,31 @@
     {
       packages = forEachSystem (system:
         let
-          pkgs = import srcs.nixpkgs { inherit system; };
+          pkgs = import srcs.nixpkgs {
+            inherit system;
+            overlays = [
+              (import srcs.rust-overlay)
+              (final: prev: {
+                rust =
+                  let
+                    rustStable = final.rust-bin.stable.${srcs.rust-version}.default;
+                  in
+                  prev.rust // {
+                    packages = prev.rust.packages // {
+                      stable = {
+                        rustPlatform = final.makeRustPlatform {
+                          inherit (final.rust.packages.stable) rustc cargo;
+                        };
+
+                        inherit (final.rust.packages.stable.rustPlatform) rust;
+                        rustc = rustStable;
+                        cargo = rustStable;
+                      };
+                    };
+                  };
+              })
+            ];
+          };
           inherit (pkgs) lib;
         in
         {
