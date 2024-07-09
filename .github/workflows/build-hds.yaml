@@ -186,23 +186,19 @@ jobs:
           tar -xzf <(curl --location https://github.com/oxalica/rust-overlay/archive/${{ needs.build.outputs.rust-overlay-revision }}.tar.gz)
           echo "hash=$(nix hash path --base32 rust-overlay-${{ needs.build.outputs.rust-overlay-revision }}/)" >> ${GITHUB_OUTPUT}
 
-      - name: prefetch x86_64-linux binary
-        id: prefetch-x86_64-linux
+      - name: prefetch release binaries
+        id: prefetch-binaries
         run: |
-          tar -xzf <(curl --location "$(sed -e 's:tag:download:' <<< ${{ needs.upload-binary.outputs.release_name }})/holo-dev-server-x86_64-linux.tar.gz")
-          echo "hash=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
-
-      - name: prefetch aarch64-linux binary
-        id: prefetch-aarch64-linux
-        run: |
-          tar -xzf <(curl --location "$(sed -e 's:tag:download:' <<< ${{ needs.upload-binary.outputs.release_name }})/holo-dev-server-aarch64-linux.tar.gz")
-          echo "hash=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
-
-      - name: prefetch aarch64-darwin binary
-        id: prefetch-aarch64-darwin
-        run: |
-          tar -xzf <(curl --location "$(sed -e 's:tag:download:' <<< ${{ needs.upload-binary.outputs.release_name }})/holo-dev-server-aarch64-darwin.tar.gz")
-          echo "hash=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
+          gh release download ${{ needs.upload-binary.outputs.tag_name }}
+          tar -xzf holo-dev-server-x86_64-linux.tar.gz
+          echo "hash_x86_64_linux=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
+          rm -rf holo-dev-server
+          tar -xzf holo-dev-server-aarch64-linux.tar.gz
+          echo "hash_aarch64_linux=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
+          rm -rf holo-dev-server
+          tar -xzf holo-dev-server-aarch64-darwin.tar.gz
+          echo "hash_aarch64_linux=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
+          rm -rf holo-dev-server
 
       - name: overwrite sources.nix
         run: |
@@ -222,15 +218,15 @@ jobs:
 
             x86_64-linux.holo-dev-server-bin = builtins.fetchTarball {
               url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.tag_name }}/holo-dev-server-x86_64-linux.tar.gz";
-              sha256 = "${{ steps.prefetch-x86_64-linux.outputs.hash }}";
+              sha256 = "${{ steps.prefetch-binaries.outputs.hash_x86_64_linux }}";
             };
             aarch64-linux.holo-dev-server-bin = builtins.fetchTarball {
               url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.tag_name }}/holo-dev-server-aarch64-linux.tar.gz";
-              sha256 = "${{ steps.prefetch-aarch64-linux.outputs.hash }}";
+              sha256 = "${{ steps.prefetch-binaries.outputs.hash_aarch64_linux }}";
             };
             aarch64-darwin.holo-dev-server-bin = builtins.fetchTarball {
               url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.tag_name }}/holo-dev-server-aarch64-darwin.tar.gz";
-              sha256 = "${{ steps.prefetch-aarch64-darwin.outputs.hash }}";
+              sha256 = "${{ steps.prefetch-binaries.outputs.hash_aarch64_darwin }}";
             };
           }
           EOF
