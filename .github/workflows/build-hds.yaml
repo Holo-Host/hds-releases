@@ -189,19 +189,19 @@ jobs:
       - name: prefetch x86_64-linux binary
         id: prefetch-x86_64-linux
         run: |
-          tar -xzf <(curl --location https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-x86_64-linux.tar.gz)
+          tar -xzf <(curl --location "$(sed -e 's:tag:download:' <<< ${{ needs.upload-binary.outputs.release_name }})/holo-dev-server-x86_64-linux.tar.gz")
           echo "hash=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
 
       - name: prefetch aarch64-linux binary
         id: prefetch-aarch64-linux
         run: |
-          tar -xzf <(curl --location https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-aarch64-linux.tar.gz)
+          tar -xzf <(curl --location "$(sed -e 's:tag:download:' <<< ${{ needs.upload-binary.outputs.release_name }})/holo-dev-server-aarch64-linux.tar.gz")
           echo "hash=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
 
       - name: prefetch aarch64-darwin binary
         id: prefetch-aarch64-darwin
         run: |
-          tar -xzf <(curl --location https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-aarch64-darwin.tar.gz)
+          tar -xzf <(curl --location "$(sed -e 's:tag:download:' <<< ${{ needs.upload-binary.outputs.release_name }})/holo-dev-server-aarch64-darwin.tar.gz")
           echo "hash=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
 
       - name: overwrite sources.nix
