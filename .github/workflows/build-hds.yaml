@@ -239,11 +239,6 @@ jobs:
             ${{ needs.build.outputs.build-deps }}
           EOF
 
-      - name: test if flake works
-        run: |
-          nix flake show --all-systems
-          nix flake check -L
-
       - name: commit and push sources.nix
         run: |
           if [[ "$(git status --porcelain)" != "" ]]; then
@@ -259,3 +254,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
           gh release edit --draft=false ${{ needs.upload-binary.outputs.tag_name }}
+
+      # Unfortunately we cannot do this earlier, since the release artifacts are
+      # only public after the release was undrafted.
+      # TODO: can we make a prerelease first, then test, then make the real release?
+      - name: test if flake works
+        run: |
+          nix flake show --all-systems
+          nix flake check -L
