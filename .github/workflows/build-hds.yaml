@@ -98,7 +98,8 @@ jobs:
       contents: write
     needs: build
     outputs:
-      release_name: ${{ steps.date.outputs.date }}
+      release_name: ${{ steps.make_release.outputs.release }}
+      tag_name: ${{ steps.date.outputs.date }}
     steps:
       - name: download x86_64-linux artifact
         uses: actions/download-artifact@v4
@@ -140,13 +141,20 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d-%H%M%S')" >> ${GITHUB_OUTPUT}
 
-      - name: Create Release
+      - name: Create draft release
+        id: make_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >-
-          gh release create --draft ${{ steps.date.outputs.date }} --repo ${{ github.repository }}
-          --title "Version ${{ steps.date.outputs.date }}" "holo-dev-server-x86_64-linux.tar.gz"
-          "holo-dev-server-aarch64-linux.tar.gz" "holo-dev-server-aarch64-darwin.tar.gz"
+        run: |-
+          release=$(
+            gh release create --draft ${{ steps.date.outputs.date }} \
+            --repo ${{ github.repository }} \
+            --title "Version ${{ steps.date.outputs.date }}" \
+            "holo-dev-server-x86_64-linux.tar.gz" \
+            "holo-dev-server-aarch64-linux.tar.gz" \
+            "holo-dev-server-aarch64-darwin.tar.gz"
+          )
+          echo "release=${release}" >> ${GITHUB_OUTPUT}
 
   update-sources:
     runs-on: ubuntu-latest
@@ -213,15 +221,15 @@ jobs:
             rust-version = "${{ needs.build.outputs.rust-version }}";
 
             x86_64-linux.holo-dev-server-bin = builtins.fetchTarball {
-              url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-x86_64-linux.tar.gz";
+              url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.tag_name }}/holo-dev-server-x86_64-linux.tar.gz";
               sha256 = "${{ steps.prefetch-x86_64-linux.outputs.hash }}";
             };
             aarch64-linux.holo-dev-server-bin = builtins.fetchTarball {
-              url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-aarch64-linux.tar.gz";
+              url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.tag_name }}/holo-dev-server-aarch64-linux.tar.gz";
               sha256 = "${{ steps.prefetch-aarch64-linux.outputs.hash }}";
             };
             aarch64-darwin.holo-dev-server-bin = builtins.fetchTarball {
-              url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.release_name }}/holo-dev-server-aarch64-darwin.tar.gz";
+              url = "https://github.com/${{ github.repository }}/releases/download/${{ needs.upload-binary.outputs.tag_name }}/holo-dev-server-aarch64-darwin.tar.gz";
               sha256 = "${{ steps.prefetch-aarch64-darwin.outputs.hash }}";
             };
           }
@@ -244,7 +252,7 @@ jobs:
             git config --local user.email "github-actions[bot]@users.noreply.github.com"
             git config --local user.name "github-actions[bot]"
             git add sources.nix holo-dev-server.deps.json
-            git commit -m "update to release ${{ needs.upload-binary.outputs.release_name }}"
+            git commit -m "update to release ${{ needs.upload-binary.outputs.tag_name }}"
             git push origin HEAD:refs/heads/main
           fi
 
@@ -252,6 +260,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
-          git tag -a -f ${{ needs.upload-binary.outputs.release_name }}
-          git push tags --force
-          gh release edit --draft=false ${{ needs.upload-binary.outputs.release_name }}
+          gh release edit --draft=false ${{ needs.upload-binary.outputs.tag_name }}
