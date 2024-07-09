@@ -188,6 +188,8 @@ jobs:
 
       - name: prefetch release binaries
         id: prefetch-binaries
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release download ${{ needs.upload-binary.outputs.tag_name }}
           tar -xzf holo-dev-server-x86_64-linux.tar.gz
