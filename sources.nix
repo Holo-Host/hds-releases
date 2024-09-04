@@ -12,15 +12,15 @@
   rust-version = "1.78.0";
 
   x86_64-linux.holo-dev-server-bin = builtins.fetchTarball {
-    url = "https://github.com/Holo-Host/hds-releases/releases/download/2024-07-16-220445/holo-dev-server-x86_64-linux.tar.gz";
-    sha256 = "0imx6yx7qngfiynwq3lfb7pa17l097qfgaf359v8z3bi32baidq4";
+    url = "https://github.com/Holo-Host/hds-releases/releases/download/2024-09-04-202251/holo-dev-server-x86_64-linux.tar.gz";
+    sha256 = "1xpsf235lmhr0m715b0x6xdpryd61g3akkgp02kpc7my28iz8mwg";
   };
   aarch64-linux.holo-dev-server-bin = builtins.fetchTarball {
-    url = "https://github.com/Holo-Host/hds-releases/releases/download/2024-07-16-220445/holo-dev-server-aarch64-linux.tar.gz";
-    sha256 = "1y66bwx6pjvqb35ndxf8940hc5kz55a8b3pjn9zds2pw5zq2gzv5";
+    url = "https://github.com/Holo-Host/hds-releases/releases/download/2024-09-04-202251/holo-dev-server-aarch64-linux.tar.gz";
+    sha256 = "1422aq6c3mvbw1i8w7rcfz72ywykz817ni0997swnbjkca18msir";
   };
   aarch64-darwin.holo-dev-server-bin = builtins.fetchTarball {
-    url = "https://github.com/Holo-Host/hds-releases/releases/download/2024-07-16-220445/holo-dev-server-aarch64-darwin.tar.gz";
-    sha256 = "";
+    url = "https://github.com/Holo-Host/hds-releases/releases/download/2024-09-04-202251/holo-dev-server-aarch64-darwin.tar.gz";
+    sha256 = "1yzlbfb6akm6kj1zzpir4q8clzsdcxav4hajvidx9dgclpiylry0";
   };
 }
