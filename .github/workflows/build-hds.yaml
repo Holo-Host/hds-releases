@@ -199,7 +199,7 @@ jobs:
           echo "hash_aarch64_linux=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
           rm -rf holo-dev-server
           tar -xzf holo-dev-server-aarch64-darwin.tar.gz
-          echo "hash_aarch64_linux=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
+          echo "hash_aarch64_darwin=$(nix hash path --base32 holo-dev-server/)" >> ${GITHUB_OUTPUT}
           rm -rf holo-dev-server
 
       - name: overwrite sources.nix
