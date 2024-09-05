@@ -79,10 +79,8 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl restart nix-daemon.service
           elif type launchctl; then
-            sudo launchctl debug system/org.nixos.nix-daemon --environment \
-              NIX_GITHUB_PRIVATE_USERNAME=$NIX_GITHUB_PRIVATE_USERNAME \
-              NIX_GITHUB_PRIVATE_PASSWORD=$NIX_GITHUB_PRIVATE_PASSWORD
-            sudo launchctl stop system/org.nixos.nix-daemon || :
+            sudo launchctl debug system/org.nixos.nix-daemon --environment NIX_GITHUB_PRIVATE_USERNAME=$NIX_GITHUB_PRIVATE_USERNAME NIX_GITHUB_PRIVATE_PASSWORD=$NIX_GITHUB_PRIVATE_PASSWORD
+            sudo launchctl stop system/org.nixos.nix-daemon
             sudo launchctl start system/org.nixos.nix-daemon
           else
             echo Unsupported system
