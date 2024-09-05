@@ -18,6 +18,9 @@ on:
         default: false
         type: boolean
 
+env:
+  NIX_GITHUB_PRIVATE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   build:
     runs-on: ${{ matrix.build-config.runner }}
