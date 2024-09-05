@@ -7,6 +7,16 @@ on:
         description: "The holo-nixpkgs tag to build from"
         required: true
         type: string
+      skip-upload-binary:
+        description: "skip the upload-binary job"
+        required: true
+        default: false
+        type: boolean
+      skip-update-sources:
+        description: "skip the update-sources job"
+        required: true
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -93,6 +103,7 @@ jobs:
           if-no-files-found: error
 
   upload-binary:
+    if: ${{ inputs.skip-upload-binary == false }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -157,6 +168,7 @@ jobs:
           echo "release=${release}" >> ${GITHUB_OUTPUT}
 
   update-sources:
+    if: ${{ inputs.skip-update-sources == false }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
