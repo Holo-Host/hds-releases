@@ -280,15 +280,15 @@
         "versions": "versions"
       },
       "locked": {
-        "lastModified": 1725442791,
-        "narHash": "sha256-pNN8Otk8OMuSPqlei12FSJAV5hfNWoiq2qFginQEhNU=",
-        "owner": "Holo-Host",
+        "lastModified": 1725548396,
+        "narHash": "sha256-rItdfgbI4YmGHgWQ5MB5/iL3kcS0tAjayhw//xTGxco=",
+        "owner": "holo-host",
         "repo": "holo-nixpkgs",
-        "rev": "d64420f48f34c9784e99e8f78ee1bba4908747e0",
+        "rev": "7e5e01f53e4ba3e58e2777daacbdb7d65197c451",
         "type": "github"
       },
       "original": {
-        "owner": "Holo-Host",
+        "owner": "holo-host",
         "ref": "develop",
         "repo": "holo-nixpkgs",
         "type": "github"
