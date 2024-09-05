@@ -70,13 +70,17 @@ jobs:
           extra-conf: |
               trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
               substituters = https://cache.nixos.org/
-              access-tokens = github.com=${{ secrets.HOLO_NIXPKGS_READ_KEY }}
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: "download holo-nixpkgs tag"
         run: |
           set -eou pipefail
+
+          cat >> ~/.config/nix/nix.conf <<EOF
+          access-tokens = github.com=${{ secrets.HOLO_NIXPKGS_READ_KEY }}
+          EOF
           cat ~/.config/nix/nix.conf
+
           nix flake update holo-nixpkgs --override-input holo-nixpkgs github:holo-host/holo-nixpkgs/${{ inputs.holo-nixpkgs-tag }}
 
       - name: "build holo-dev-server"
