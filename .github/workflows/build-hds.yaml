@@ -67,17 +67,24 @@ jobs:
               password ${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
           EOF
 
-          sudo mkdir -p /etc/systemd/system/nix-daemon.service.d/
-          sudo dd of=/etc/systemd/system/nix-daemon.service.d/github-credentials.conf <<EOF
-          [Service]
-          Environment=NIX_GITHUB_PRIVATE_USERNAME=${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }}
-          Environment=NIX_GITHUB_PRIVATE_PASSWORD=${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
-          EOF
+          if type systemctl; then
+            sudo mkdir -p /etc/systemd/system/nix-daemon.service.d/
+            sudo dd of=/etc/systemd/system/nix-daemon.service.d/github-credentials.conf <<EOF
+            [Service]
+            Environment=NIX_GITHUB_PRIVATE_USERNAME=${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }}
+            Environment=NIX_GITHUB_PRIVATE_PASSWORD=${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
+            EOF
 
-          sudo systemctl daemon-reload
-          sudo systemctl restart nix-daemon.service
-
-
+            sudo systemctl daemon-reload
+            sudo systemctl restart nix-daemon.service
+          elif type launchctl; then
+            sudo launchctl debug system/org.nixos.nix-daemon --environment \
+              NIX_GITHUB_PRIVATE_USERNAME=$NIX_GITHUB_PRIVATE_USERNAME \
+              NIX_GITHUB_PRIVATE_PASSWORD=$NIX_GITHUB_PRIVATE_PASSWORD
+          else
+            echo Unsupported system
+            exit 1
+          fi
 
       - name: "download holo-nixpkgs tag"
         run: |
