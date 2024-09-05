@@ -6,16 +6,17 @@ on:
       holo-nixpkgs-tag:
         description: "The holo-nixpkgs tag to build from"
         required: true
+        default: "develop"
         type: string
       skip-upload-binary:
         description: "skip the upload-binary job"
         required: true
-        default: false
+        default: true
         type: boolean
       skip-update-sources:
         description: "skip the update-sources job"
         required: true
-        default: false
+        default: true
         type: boolean
 
 env:
