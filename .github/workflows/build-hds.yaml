@@ -70,10 +70,10 @@ jobs:
           if type systemctl; then
             sudo mkdir -p /etc/systemd/system/nix-daemon.service.d/
             sudo dd of=/etc/systemd/system/nix-daemon.service.d/github-credentials.conf <<EOF
-            [Service]
-            Environment=NIX_GITHUB_PRIVATE_USERNAME=$NIX_GITHUB_PRIVATE_USERNAME
-            Environment=NIX_GITHUB_PRIVATE_PASSWORD=$NIX_GITHUB_PRIVATE_PASSWORD
-            EOF
+          [Service]
+          Environment=NIX_GITHUB_PRIVATE_USERNAME=$NIX_GITHUB_PRIVATE_USERNAME
+          Environment=NIX_GITHUB_PRIVATE_PASSWORD=$NIX_GITHUB_PRIVATE_PASSWORD
+          EOF
 
             sudo systemctl daemon-reload
             sudo systemctl restart nix-daemon.service
