@@ -51,6 +51,15 @@ jobs:
           #   substituters = https://cache.holo.host https://cache.nixos.org/
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
+      - name: Configure nix with github credentials
+        run: |
+          set -eou pipefail
+          mkdir -p ~/.config/nix
+          cat > ~/.config/nix/netrc <<EOF
+          machine github.com
+              password ${{ secrets.GITHUB_TOKEN }}
+          EOF
+
       - name: "download holo-nixpkgs tag"
         run: |
           set -eou pipefail
