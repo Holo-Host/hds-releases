@@ -163,7 +163,7 @@ jobs:
           if-no-files-found: error
 
       - name: Setup upterm session
-        if: ${{ always() }}
+        if: ${{ failure() && ! cancelled() }}
         uses: owenthereal/action-upterm@v1
         with:
           limit-access-to-actor: true # Restrict to the user who triggered the workflow
