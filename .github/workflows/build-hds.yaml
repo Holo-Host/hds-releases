@@ -93,7 +93,7 @@ jobs:
               while ! sudo pgrep nix-daemon; do
                 echo waiting for nix-daemon
                 sleep 1
-              fi
+              done
               exit 0
             )
           else
