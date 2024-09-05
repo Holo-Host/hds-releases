@@ -68,28 +68,21 @@ jobs:
 
       - uses: DeterminateSystems/nix-installer-action@main
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.HOLO_NIXPKGS_READ_KEY }}
           extra-conf: |
-              netrc-file = /etc/nix/netrc
-          #     trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.holo.host-1:lNXIXtJgS9Iuw4Cu6X0HINLu9sTfcjEntnrgwMQIMcE= cache.holo.host-2:ZJCkX3AUYZ8soxTLfTb60g+F3MkWD7hkH9y8CgqwhDQ=
-          #     substituters = https://cache.holo.host https://cache.nixos.org/
+              trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+              substituters = https://cache.nixos.org/
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: "download holo-nixpkgs tag"
         run: |
           set -eou pipefail
-
-          curl -v -L \
-               --fail-with-body \
-               -H "Authorization: Bearer ${{ secrets.HOLO_NIXPKGS_READ_KEY }}" \
-               https://api.github.com/repos/holo-host/holo-nixpkgs/tarball/${{ inputs.holo-nixpkgs-tag }} | \
-            tar -xz --strip-components=1 --
+          nix flake update holo-nixpkgs --override-input holo-nixpkgs github:Holo-Host/holo-nixpkgs/${{ inputs.holo-nixpkgs-tag }}
 
       - name: "build holo-dev-server"
         if: ${{ matrix.build-config.native }}
         run: |
           nix build -vL \
-            --impure \
             --out-link holo-dev-server \
             '.#legacyPackages.${{ matrix.build-config.system }}.holo-dev-server-bin'
 

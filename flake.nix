@@ -1,10 +1,18 @@
 {
-  outputs = { self }:
+  inputs = {
+    holo-nixpkgs.url = "github:Holo-Host/holo-nixpkgs/develop";
+    nixpkgs.follows = "holo-nixpkgs/nixpkgs";
+  };
+  outputs =
+    { self
+    , holo-nixpkgs
+    , nixpkgs
+    ,
+    }:
     let
       nameValuePair = name: value: { inherit name value; };
 
-      genAttrs = names: f:
-        builtins.listToAttrs (map (n: nameValuePair n (f n)) names);
+      genAttrs = names: f: builtins.listToAttrs (map (n: nameValuePair n (f n)) names);
 
       srcs = import ./sources.nix;
 
@@ -15,12 +23,11 @@
       ];
 
       # We only run tests for x86_64-linux in CI
-      forEachTestSystem = genAttrs [
-        "x86_64-linux"
-      ];
+      forEachTestSystem = genAttrs [ "x86_64-linux" ];
     in
     {
-      packages = forEachSystem (system:
+      packages = forEachSystem (
+        system:
         let
           pkgs = import srcs.nixpkgs {
             inherit system;
@@ -31,18 +38,19 @@
                   let
                     rustStable = final.rust-bin.stable.${srcs.rust-version}.default;
                   in
-                  prev.rust // {
-                    packages = prev.rust.packages // {
-                      stable = {
-                        rustPlatform = final.makeRustPlatform {
-                          inherit (final.rust.packages.stable) rustc cargo;
-                        };
+                  prev.rust
+                  // {
+                    packages =
+                      prev.rust.packages
+                      // {
+                        stable = {
+                          rustPlatform = final.makeRustPlatform { inherit (final.rust.packages.stable) rustc cargo; };
 
-                        inherit (final.rust.packages.stable.rustPlatform) rust;
-                        rustc = rustStable;
-                        cargo = rustStable;
+                          inherit (final.rust.packages.stable.rustPlatform) rust;
+                          rustc = rustStable;
+                          cargo = rustStable;
+                        };
                       };
-                    };
                   };
               })
             ];
@@ -62,18 +70,22 @@
                 # hashes of the build-time inputs.
                 # NOTE: these dependencies are not vendored! So users need to be
                 # able to either build or substitute them.
-                buildInputs = map
-                  (inputAttr: pkgs.${inputAttr})
-                  (lib.importJSON ./holo-dev-server.deps.json);
+                buildInputs = map (inputAttr: pkgs.${inputAttr}) (lib.importJSON ./holo-dev-server.deps.json);
               }
               ''
                 mkdir -p $out/bin
                 cp -a ${src}/bin/holo-dev-server $out/bin/holo-dev-server
               '';
-        });
+        }
+      );
 
       checks = forEachTestSystem (system: {
         holo-dev-server-bin = self.packages.${system}.holo-dev-server-bin;
       });
+
+      # formatter = forEachSystem (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
+      formatter = forEachSystem (system: holo-nixpkgs.legacyPackages.${system}.treefmtWrapper);
+
+      inherit (holo-nixpkgs) legacyPackages;
     };
 }
