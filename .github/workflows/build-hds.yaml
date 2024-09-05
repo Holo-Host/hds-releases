@@ -66,7 +66,7 @@ jobs:
 
       - uses: DeterminateSystems/nix-installer-action@main
         with:
-          github-token: ${{ secrets.HOLO_NIXPKGS_READ_KEY }}
+          github-token: ${{ secrets.STEVEEJ_READ_ONLY_ACCESS }}
           extra-conf: |
               trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
               substituters = https://cache.nixos.org/
@@ -76,10 +76,10 @@ jobs:
         run: |
           set -eou pipefail
 
-          cat >> ~/.config/nix/nix.conf <<EOF
-          access-tokens = github.com=${{ secrets.HOLO_NIXPKGS_READ_KEY }}
-          EOF
-          cat ~/.config/nix/nix.conf
+          # cat >> ~/.config/nix/nix.conf <<EOF
+          # access-tokens = github.com=${{ secrets.HOLO_NIXPKGS_READ_KEY }}
+          # EOF
+          # cat ~/.config/nix/nix.conf
 
           nix flake update holo-nixpkgs --override-input holo-nixpkgs github:holo-host/holo-nixpkgs/${{ inputs.holo-nixpkgs-tag }}
 
