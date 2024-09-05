@@ -47,7 +47,7 @@ jobs:
 
       - uses: DeterminateSystems/nix-installer-action@main
         with:
-          github-token: ${{ secrets.GITHUB_SECRET }}
+          github-token: ${{ secrets.HOLO_HOST_ORG_READ_ONLY_ACCESS }}
           extra-conf: |
               trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
               substituters = https://cache.nixos.org/
