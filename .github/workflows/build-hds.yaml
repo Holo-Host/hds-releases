@@ -63,6 +63,8 @@ jobs:
           netrc-file = /etc/nix/netrc
           EOF
 
+          chmod 664 /etc/nix/nix.conf
+
 
       - uses: DeterminateSystems/nix-installer-action@main
         with:
