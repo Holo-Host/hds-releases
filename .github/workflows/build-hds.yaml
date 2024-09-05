@@ -51,6 +51,7 @@ jobs:
           extra-conf: |
               trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
               substituters = https://cache.nixos.org/
+              netrc-file = /etc/nix/netrc
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: Configure nix with github credentials
@@ -65,11 +66,6 @@ jobs:
               username ${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }}
               password ${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
           EOF
-
-          sudo dd of=/etc/nix/nix.conf <<EOF
-          netrc-file = /etc/nix/netrc
-          EOF
-          sudo chmod 664 /etc/nix/nix.conf
 
           sudo mkdir -p /etc/systemd/system/nix-daemon.service.d/
           sudo dd of=/etc/systemd/system/nix-daemon.service.d/github-credentials.conf <<EOF
@@ -148,6 +144,8 @@ jobs:
         with:
           limit-access-to-actor: true # Restrict to the user who triggered the workflow
           limit-access-to-users: steveej # Specific authorized users only
+          ## If no one connects after 5 minutes, shut down server.
+          wait-timeout-minutes: 5
 
 
 
