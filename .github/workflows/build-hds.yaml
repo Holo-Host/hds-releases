@@ -19,10 +19,6 @@ on:
         default: true
         type: boolean
 
-env:
-  NIX_GITHUB_PRIVATE_USERNAME: ${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }}
-  NIX_GITHUB_PRIVATE_PASSWORD: ${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
-
 jobs:
   build:
     runs-on: ${{ matrix.build-config.runner }}
@@ -61,19 +57,18 @@ jobs:
             sudo mkdir -p /etc/systemd/system/nix-daemon.service.d/
             sudo dd of=/etc/systemd/system/nix-daemon.service.d/github-credentials.conf <<EOF
           [Service]
-          Environment=NIX_GITHUB_PRIVATE_USERNAME=$NIX_GITHUB_PRIVATE_USERNAME
-          Environment=NIX_GITHUB_PRIVATE_PASSWORD=$NIX_GITHUB_PRIVATE_PASSWORD
+          Environment=NIX_GITHUB_PRIVATE_USERNAME=${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }}
+          Environment=NIX_GITHUB_PRIVATE_PASSWORD=${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
           EOF
 
             sudo systemctl daemon-reload
             sudo systemctl restart nix-daemon.service
           elif type launchctl; then
-            sudo launchctl debug system/org.nixos.nix-daemon --environment NIX_GITHUB_PRIVATE_USERNAME=$NIX_GITHUB_PRIVATE_USERNAME NIX_GITHUB_PRIVATE_PASSWORD=$NIX_GITHUB_PRIVATE_PASSWORD
+            sudo launchctl debug system/org.nixos.nix-daemon --environment NIX_GITHUB_PRIVATE_USERNAME=${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }} NIX_GITHUB_PRIVATE_PASSWORD=${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
 
             # debug whether the nix-daemon PID changes before and after as a restart of it is required for the changes to take effect
             (
               set +eE +o pipefail
-              set -x
 
               sudo pgrep nix-daemon
               sudo launchctl stop system/org.nixos.nix-daemon
