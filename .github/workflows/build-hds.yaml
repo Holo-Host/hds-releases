@@ -90,7 +90,10 @@ jobs:
               sudo launchctl stop system/org.nixos.nix-daemon
               sudo pkill -9 nix-daemon
               sudo launchctl start system/org.nixos.nix-daemon
-              sudo pgrep nix-daemon
+              while ! sudo pgrep nix-daemon; do
+                echo waiting for nix-daemon
+                sleep 1
+              fi
               exit 0
             )
           else
