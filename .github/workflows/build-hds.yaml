@@ -89,6 +89,7 @@ jobs:
         if: ${{ matrix.build-config.native }}
         run: |
           nix build -vL \
+            --impure \
             --out-link holo-dev-server \
             '.#legacyPackages.${{ matrix.build-config.system }}.holo-dev-server-bin'
 
