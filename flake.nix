@@ -1,6 +1,6 @@
 {
   inputs = {
-    holo-nixpkgs.url = "github:Holo-Host/holo-nixpkgs/develop";
+    holo-nixpkgs.url = "github:holo-host/holo-nixpkgs/develop";
     nixpkgs.follows = "holo-nixpkgs/nixpkgs";
   };
   outputs =

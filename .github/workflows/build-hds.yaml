@@ -75,7 +75,8 @@ jobs:
       - name: "download holo-nixpkgs tag"
         run: |
           set -eou pipefail
-          nix flake update holo-nixpkgs --override-input holo-nixpkgs github:Holo-Host/holo-nixpkgs/${{ inputs.holo-nixpkgs-tag }}
+          cat ~/.config/nix/nix.conf
+          nix flake update holo-nixpkgs --override-input holo-nixpkgs github:holo-host/holo-nixpkgs/${{ inputs.holo-nixpkgs-tag }}
 
       - name: "build holo-dev-server"
         if: ${{ matrix.build-config.native }}
