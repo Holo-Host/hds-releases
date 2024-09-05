@@ -89,6 +89,8 @@ jobs:
             exit 1
           fi
 
+          echo all good
+
       - name: "download holo-nixpkgs tag"
         run: |
           set -eou pipefail
