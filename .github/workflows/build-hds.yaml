@@ -56,6 +56,12 @@ jobs:
               password ${{ secrets.GITHUB_TOKEN }}
           EOF
 
+          sudo dd of=/etc/nix/nix.conf <<EOF
+          netrc-file = /etc/nix/netrc
+          EOF
+
+
+
       - uses: DeterminateSystems/nix-installer-action@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
