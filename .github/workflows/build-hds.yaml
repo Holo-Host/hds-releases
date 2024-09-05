@@ -45,7 +45,7 @@ jobs:
       - name: Configure nix with github credentials
         run: |
           set -eou pipefail
-          mkdir -p /etc/nix/
+          sudo mkdir -p /etc/nix/
           cat > /etc/nix/netrc <<EOF
           machine github.com
               password ${{ secrets.GITHUB_TOKEN }}
