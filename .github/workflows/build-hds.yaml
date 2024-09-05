@@ -19,7 +19,8 @@ on:
         type: boolean
 
 env:
-  NIX_GITHUB_PRIVATE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+  NIX_GITHUB_PRIVATE_USERNAME: ${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }}
+  NIX_GITHUB_PRIVATE_PASSWORD: ${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
 
 jobs:
   build:
@@ -45,30 +46,30 @@ jobs:
         with:
           path: "hds-releases"
 
-      - name: Configure nix with github credentials
-        run: |
-          set -eou pipefail
-          sudo mkdir -p /etc/nix/
-          sudo dd of=/etc/nix/netrc <<EOF
-          machine github.com
-              password ${{ secrets.HOLO_NIXPKGS_READ_KEY }}
-          machine api.github.com
-              password ${{ secrets.HOLO_NIXPKGS_READ_KEY }}
-          EOF
+      # - name: Configure nix with github credentials
+      #   run: |
+      #     set -eou pipefail
+      #     sudo mkdir -p /etc/nix/
+      #     sudo dd of=/etc/nix/netrc <<EOF
+      #     machine github.com
+      #         password ${{ secrets.HOLO_NIXPKGS_READ_KEY }}
+      #     machine api.github.com
+      #         password ${{ secrets.HOLO_NIXPKGS_READ_KEY }}
+      #     EOF
 
-          sudo dd of=/etc/nix/nix.conf <<EOF
-          netrc-file = /etc/nix/netrc
-          EOF
+      #     sudo dd of=/etc/nix/nix.conf <<EOF
+      #     netrc-file = /etc/nix/netrc
+      #     EOF
 
 
 
       - uses: DeterminateSystems/nix-installer-action@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          extra-conf: |
-              netrc-file = /etc/nix/netrc
-          #   trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.holo.host-1:lNXIXtJgS9Iuw4Cu6X0HINLu9sTfcjEntnrgwMQIMcE= cache.holo.host-2:ZJCkX3AUYZ8soxTLfTb60g+F3MkWD7hkH9y8CgqwhDQ=
-          #   substituters = https://cache.holo.host https://cache.nixos.org/
+          # extra-conf: |
+          #     netrc-file = /etc/nix/netrc
+          #     trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.holo.host-1:lNXIXtJgS9Iuw4Cu6X0HINLu9sTfcjEntnrgwMQIMcE= cache.holo.host-2:ZJCkX3AUYZ8soxTLfTb60g+F3MkWD7hkH9y8CgqwhDQ=
+          #     substituters = https://cache.holo.host https://cache.nixos.org/
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: "download holo-nixpkgs tag"
