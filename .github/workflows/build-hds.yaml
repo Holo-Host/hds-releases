@@ -32,18 +32,23 @@ jobs:
           - { system: x86_64-linux, runner: "ubuntu-latest", native: true }
           - { system: aarch64-linux, runner: "ubuntu-latest", native: false }
           - { system: aarch64-darwin, runner: "macos-latest", native: true }
+
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
       - uses: actions/checkout@v4
         with:
           path: "hds-releases"
 
-      - name: "install nix"
-        uses: "cachix/install-nix-action@v22"
+      - uses: DeterminateSystems/nix-installer-action@main
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          extra_nix_config: |
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          extra-conf: |
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.holo.host-1:lNXIXtJgS9Iuw4Cu6X0HINLu9sTfcjEntnrgwMQIMcE= cache.holo.host-2:ZJCkX3AUYZ8soxTLfTb60g+F3MkWD7hkH9y8CgqwhDQ=
             substituters = https://cache.holo.host https://cache.nixos.org/
+      - uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: "download holo-nixpkgs tag"
         run: |
