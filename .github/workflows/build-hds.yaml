@@ -6,7 +6,18 @@ on:
       holo-nixpkgs-tag:
         description: "The holo-nixpkgs tag to build from"
         required: true
+        default: "develop"
         type: string
+      skip-upload-binary:
+        description: "skip the upload-binary job"
+        required: true
+        default: true
+        type: boolean
+      skip-update-sources:
+        description: "skip the update-sources job"
+        required: true
+        default: true
+        type: boolean
 
 jobs:
   build:
@@ -22,28 +33,65 @@ jobs:
           - { system: x86_64-linux, runner: "ubuntu-latest", native: true }
           - { system: aarch64-linux, runner: "ubuntu-latest", native: false }
           - { system: aarch64-darwin, runner: "macos-latest", native: true }
+
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: "hds-releases"
 
-      - name: "install nix"
-        uses: "cachix/install-nix-action@v22"
+      - uses: DeterminateSystems/nix-installer-action@main
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          extra_nix_config: |
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.holo.host-1:lNXIXtJgS9Iuw4Cu6X0HINLu9sTfcjEntnrgwMQIMcE= cache.holo.host-2:ZJCkX3AUYZ8soxTLfTb60g+F3MkWD7hkH9y8CgqwhDQ=
-            substituters = https://cache.holo.host https://cache.nixos.org/
+          github-token: ${{ secrets.HOLO_HOST_ORG_READ_ONLY_ACCESS }}
+          extra-conf: |
+              trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+              substituters = https://cache.nixos.org/
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Configure nix with github credentials
+        run: |
+          set -xu
+
+          if type systemctl; then
+            sudo mkdir -p /etc/systemd/system/nix-daemon.service.d/
+            sudo dd of=/etc/systemd/system/nix-daemon.service.d/github-credentials.conf <<EOF
+          [Service]
+          Environment=NIX_GITHUB_PRIVATE_USERNAME=${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }}
+          Environment=NIX_GITHUB_PRIVATE_PASSWORD=${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
+          EOF
+
+            sudo systemctl daemon-reload
+            sudo systemctl restart nix-daemon.service
+          elif type launchctl; then
+            sudo launchctl debug system/org.nixos.nix-daemon --environment NIX_GITHUB_PRIVATE_USERNAME=${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }} NIX_GITHUB_PRIVATE_PASSWORD=${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
+
+            # debug whether the nix-daemon PID changes before and after as a restart of it is required for the changes to take effect
+            (
+              set +eE +o pipefail
+
+              sudo pgrep nix-daemon
+              sudo launchctl stop system/org.nixos.nix-daemon
+              sudo pkill -9 nix-daemon
+              sudo launchctl start system/org.nixos.nix-daemon
+              while ! sudo pgrep nix-daemon; do
+                echo waiting for nix-daemon
+                sleep 1
+              done
+              exit 0
+            )
+          else
+            echo Unsupported system
+            exit 1
+          fi
+
+          echo all good
 
       - name: "download holo-nixpkgs tag"
         run: |
           set -eou pipefail
 
-          curl -v -L \
-               --fail-with-body \
-               -H "Authorization: Bearer ${{ secrets.HOLO_NIXPKGS_READ_KEY }}" \
-               https://api.github.com/repos/holo-host/holo-nixpkgs/tarball/${{ inputs.holo-nixpkgs-tag }} | \
-            tar -xz --strip-components=1 --
+          nix flake update holo-nixpkgs --override-input holo-nixpkgs github:holo-host/holo-nixpkgs/${{ inputs.holo-nixpkgs-tag }}
 
       - name: "build holo-dev-server"
         if: ${{ matrix.build-config.native }}
@@ -85,6 +133,7 @@ jobs:
           echo "build-deps=$(nix eval --raw '.#legacyPackages.${{ matrix.build-config.system }}.holo-dev-server-bin.propagatedBuildInputs')" >> ${GITHUB_OUTPUT}
 
       - name: upload artifact
+        if: ${{ inputs.skip-upload-binary == false }}
         uses: actions/upload-artifact@v4
         with:
           name: holo-dev-server-${{ inputs.holo-nixpkgs-tag }}-${{ matrix.build-config.system }}
@@ -92,7 +141,19 @@ jobs:
             holo-dev-server
           if-no-files-found: error
 
+      - name: Setup upterm session
+        if: ${{ failure() && ! cancelled() }}
+        uses: owenthereal/action-upterm@v1
+        with:
+          limit-access-to-actor: true # Restrict to the user who triggered the workflow
+          limit-access-to-users: steveej # Specific authorized users only
+          ## If no one connects after 5 minutes, shut down server.
+          wait-timeout-minutes: 5
+
+
+
   upload-binary:
+    if: ${{ inputs.skip-upload-binary == false }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -157,6 +218,7 @@ jobs:
           echo "release=${release}" >> ${GITHUB_OUTPUT}
 
   update-sources:
+    if: ${{ inputs.skip-update-sources == false }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
