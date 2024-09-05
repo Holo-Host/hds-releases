@@ -45,24 +45,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # - name: Configure nix with github credentials
-      #   run: |
-      #     set -eou pipefail
-      #     sudo mkdir -p /etc/nix/
-      #     sudo dd of=/etc/nix/netrc <<EOF
-      #     machine github.com
-      #         username ${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }}
-      #         password ${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
-      #     machine api.github.com
-      #         username ${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }}
-      #         password ${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
-      #     EOF
+      - name: Configure nix with github credentials
+        run: |
+          set -eou pipefail
+          sudo mkdir -p /etc/nix/
+          sudo dd of=/etc/nix/netrc <<EOF
+          machine github.com
+              username ${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }}
+              password ${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
+          machine api.github.com
+              username ${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }}
+              password ${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
+          EOF
 
-      #     sudo dd of=/etc/nix/nix.conf <<EOF
-      #     netrc-file = /etc/nix/netrc
-      #     EOF
+          sudo dd of=/etc/nix/nix.conf <<EOF
+          netrc-file = /etc/nix/netrc
+          EOF
+          sudo chmod 664 /etc/nix/nix.conf
 
-      #     sudo chmod 664 /etc/nix/nix.conf
+          sudo mkdir -p /etc/systemd/system/nix-daemon.service.d/
+          sudo dd of=/etc/systemd/system/nix-daemon.service.d/github-credentials.conf <<EOF
+          [Service]
+          Environment=NIX_GITHUB_PRIVATE_USERNAME=${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }}
+          Environment=NIX_GITHUB_PRIVATE_PASSWORD=${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
+          EOF
+
+          sudo systemctl daemon-reload
+          sudo systemctl restart nix-daemon.service
 
 
       - uses: DeterminateSystems/nix-installer-action@main
