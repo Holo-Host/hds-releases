@@ -71,8 +71,8 @@ jobs:
             sudo mkdir -p /etc/systemd/system/nix-daemon.service.d/
             sudo dd of=/etc/systemd/system/nix-daemon.service.d/github-credentials.conf <<EOF
             [Service]
-            Environment=NIX_GITHUB_PRIVATE_USERNAME=${{ secrets.NIX_GITHUB_PRIVATE_USERNAME }}
-            Environment=NIX_GITHUB_PRIVATE_PASSWORD=${{ secrets.NIX_GITHUB_PRIVATE_PASSWORD }}
+            Environment=NIX_GITHUB_PRIVATE_USERNAME=$NIX_GITHUB_PRIVATE_USERNAME
+            Environment=NIX_GITHUB_PRIVATE_PASSWORD=$NIX_GITHUB_PRIVATE_PASSWORD
             EOF
 
             sudo systemctl daemon-reload
@@ -81,6 +81,8 @@ jobs:
             sudo launchctl debug system/org.nixos.nix-daemon --environment \
               NIX_GITHUB_PRIVATE_USERNAME=$NIX_GITHUB_PRIVATE_USERNAME \
               NIX_GITHUB_PRIVATE_PASSWORD=$NIX_GITHUB_PRIVATE_PASSWORD
+            sudo launchctl stop system/org.nixos.nix-daemon
+            sudo launchctl start system/org.nixos.nix-daemon
           else
             echo Unsupported system
             exit 1
