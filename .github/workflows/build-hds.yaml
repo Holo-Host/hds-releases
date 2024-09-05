@@ -70,6 +70,7 @@ jobs:
           extra-conf: |
               trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
               substituters = https://cache.nixos.org/
+              access-tokens = github.com=${{ secrets.HOLO_NIXPKGS_READ_KEY }}
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: "download holo-nixpkgs tag"
