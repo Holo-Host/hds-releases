@@ -84,11 +84,12 @@ jobs:
             # debug whether the nix-daemon PID changes before and after as a restart of it is required for the changes to take effect
             sudo pgrep nix-daemon
             (
-              set +e
+              set +eE +o pipefail
               set -x
               sudo launchctl stop system/org.nixos.nix-daemon
               sudo pkill -9 nix-daemon
               sudo launchctl start system/org.nixos.nix-daemon
+              exit 0
             )
             sudo pgrep nix-daemon
           else
