@@ -124,12 +124,22 @@ jobs:
           echo "build-deps=$(nix eval --raw '.#legacyPackages.${{ matrix.build-config.system }}.holo-dev-server-bin.propagatedBuildInputs')" >> ${GITHUB_OUTPUT}
 
       - name: upload artifact
+        if: ${{ inputs.skip-upload-binary == false }}
         uses: actions/upload-artifact@v4
         with:
           name: holo-dev-server-${{ inputs.holo-nixpkgs-tag }}-${{ matrix.build-config.system }}
           path: |
             holo-dev-server
           if-no-files-found: error
+
+      - name: Setup upterm session
+        if: ${{ always() }}
+        uses: owenthereal/action-upterm@v1
+        with:
+          limit-access-to-actor: true # Restrict to the user who triggered the workflow
+          limit-access-to-users: steveej # Specific authorized users only
+
+
 
   upload-binary:
     if: ${{ inputs.skip-upload-binary == false }}
