@@ -1,10 +1,10 @@
 {
-  outputs = { self }:
+  outputs =
+    { self }:
     let
       nameValuePair = name: value: { inherit name value; };
 
-      genAttrs = names: f:
-        builtins.listToAttrs (map (n: nameValuePair n (f n)) names);
+      genAttrs = names: f: builtins.listToAttrs (map (n: nameValuePair n (f n)) names);
 
       srcs = import ./sources.nix;
 
@@ -20,7 +20,8 @@
       ];
     in
     {
-      packages = forEachSystem (system:
+      packages = forEachSystem (
+        system:
         let
           pkgs = import srcs.nixpkgs {
             inherit system;
@@ -31,7 +32,8 @@
                   let
                     rustStable = final.rust-bin.stable.${srcs.rust-version}.default;
                   in
-                  prev.rust // {
+                  prev.rust
+                  // {
                     packages = prev.rust.packages // {
                       stable = {
                         rustPlatform = final.makeRustPlatform {
@@ -62,15 +64,16 @@
                 # hashes of the build-time inputs.
                 # NOTE: these dependencies are not vendored! So users need to be
                 # able to either build or substitute them.
-                buildInputs = map
-                  (inputAttr: pkgs.${inputAttr})
-                  (lib.importJSON ./holo-dev-server.deps.json);
+                buildInputs = map (inputAttr: pkgs.${inputAttr}) (
+                  (lib.importJSON ./holo-dev-server.deps.json).dependencies
+                );
               }
               ''
                 mkdir -p $out/bin
                 cp -a ${src}/bin/holo-dev-server $out/bin/holo-dev-server
               '';
-        });
+        }
+      );
 
       checks = forEachTestSystem (system: {
         holo-dev-server-bin = self.packages.${system}.holo-dev-server-bin;
