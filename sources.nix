@@ -2,26 +2,26 @@
 # Please do not edit it manually, all changes will be overwritten.
 {
   nixpkgs = builtins.fetchTarball {
-    url = "https://github.com/nixos/nixpkgs/archive/a3c8d64ba846725f040582b2d3b875466d2115bd.tar.gz";
-    sha256 = "1hvm1iywlgsk49qall7vizf8w9hbl1ygbshlsly7lc8m5yg8awpm";
+    url = "https://github.com/nixos/nixpkgs/archive/fbca5e745367ae7632731639de5c21f29c8744ed.tar.gz";
+    sha256 = "07wa6y7q4ql0x1jj08dignak2lra003inf2cxl4xxvyqdsspshp3";
   };
 
   rust-overlay = builtins.fetchTarball {
-    url = "https://github.com/oxalica/rust-overlay/archive/419e7fae2731f41dd9b3e34dfe8802be68558b92.tar.gz";
-    sha256 = "03l7vgzm7djn7k8wsdfy3rh44al5ga459ix9vcxfgfdw0kpvf6z9";
+    url = "https://github.com/oxalica/rust-overlay/archive/c2099c6c7599ea1980151b8b6247a8f93e1806ee.tar.gz";
+    sha256 = "0bvvbliirzr4cwn11czwkkmg64rxgsl7qa64a62w3izcn4dgyy7k";
   };
   rust-version = "1.78.0";
 
   x86_64-linux.holo-dev-server-bin = builtins.fetchTarball {
-    url = "https://github.com/Holo-Host/hds-releases/releases/download/2024-09-19-094827/holo-dev-server-x86_64-linux.tar.gz";
-    sha256 = "1xpsf235lmhr0m715b0x6xdpryd61g3akkgp02kpc7my28iz8mwg";
+    url = "https://github.com/Holo-Host/hds-releases/releases/download/2025-01-09-165434/holo-dev-server-x86_64-linux.tar.gz";
+    sha256 = "1imkialhdbjchy1b4zd4j3i1r97g50y44xvw9pwvpzbnwrg721hw";
   };
   aarch64-linux.holo-dev-server-bin = builtins.fetchTarball {
-    url = "https://github.com/Holo-Host/hds-releases/releases/download/2024-09-19-094827/holo-dev-server-aarch64-linux.tar.gz";
-    sha256 = "1422aq6c3mvbw1i8w7rcfz72ywykz817ni0997swnbjkca18msir";
+    url = "https://github.com/Holo-Host/hds-releases/releases/download/2025-01-09-165434/holo-dev-server-aarch64-linux.tar.gz";
+    sha256 = "0pf8fy2689klhbcyvg5l0416hv3ww52hxxl3y7019pdr5pckg644";
   };
   aarch64-darwin.holo-dev-server-bin = builtins.fetchTarball {
-    url = "https://github.com/Holo-Host/hds-releases/releases/download/2024-09-19-094827/holo-dev-server-aarch64-darwin.tar.gz";
-    sha256 = "1yzlbfb6akm6kj1zzpir4q8clzsdcxav4hajvidx9dgclpiylry0";
+    url = "https://github.com/Holo-Host/hds-releases/releases/download/2025-01-09-165434/holo-dev-server-aarch64-darwin.tar.gz";
+    sha256 = "1rg8lk09b135vk2flpfibj5rwgwhylbqk19i4nkw29smc9jd5ny7";
   };
 }
