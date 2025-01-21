@@ -2,13 +2,13 @@
 # Please do not edit it manually, all changes will be overwritten.
 {
   nixpkgs = builtins.fetchTarball {
-    url = "https://github.com/nixos/nixpkgs/archive/fbca5e745367ae7632731639de5c21f29c8744ed.tar.gz";
-    sha256 = "07wa6y7q4ql0x1jj08dignak2lra003inf2cxl4xxvyqdsspshp3";
+    url = "https://github.com/nixos/nixpkgs/archive/b134951a4c9f3c995fd7be05f3243f8ecd65d798.tar.gz";
+    sha256 = "1fj3n9bm2zm2q6hafacqrngdkrlrlvwrbwx9k9j1v778c045fjl5";
   };
 
   rust-overlay = builtins.fetchTarball {
-    url = "https://github.com/oxalica/rust-overlay/archive/c2099c6c7599ea1980151b8b6247a8f93e1806ee.tar.gz";
-    sha256 = "0bvvbliirzr4cwn11czwkkmg64rxgsl7qa64a62w3izcn4dgyy7k";
+    url = "https://github.com/oxalica/rust-overlay/archive/275c824ed9e90e7fd4f96d187bde3670062e721f.tar.gz";
+    sha256 = "09v299w4ph64sdp0qyybsdn7d78fx1xgg2jj1avxpwyxqi7ildlv";
   };
   rust-version = "1.78.0";
 
