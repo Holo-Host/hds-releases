@@ -3,7 +3,7 @@
 {
   nixpkgs = builtins.fetchTarball {
     url = "https://github.com/nixos/nixpkgs/archive/b134951a4c9f3c995fd7be05f3243f8ecd65d798.tar.gz";
-    sha256 = "1fj3n9bm2zm2q6hafacqrngdkrlrlvwrbwx9k9j1v778c045fjl5";
+    sha256 = "0zydsqiaz8qi4zd63zsb2gij2p614cgkcaisnk11wjy3nmiq0x1s";
   };
 
   rust-overlay = builtins.fetchTarball {
