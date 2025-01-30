@@ -8,7 +8,7 @@
 
   rust-overlay = builtins.fetchTarball {
     url = "https://github.com/oxalica/rust-overlay/archive/275c824ed9e90e7fd4f96d187bde3670062e721f.tar.gz";
-    sha256 = "09v299w4ph64sdp0qyybsdn7d78fx1xgg2jj1avxpwyxqi7ildlv";
+    sha256 = "1j2g5bhjnm01qr1hinvm434mqkbg90h03fmccw7fcmqdr52j4iz5";
   };
   rust-version = "1.78.0";
 
